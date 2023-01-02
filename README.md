@@ -1,7 +1,7 @@
 # Windows Setup
 
 ```
-# not implemented yet
+iex(iwr "https://raw.githubusercontent.com/bofigueiredo/env/main/windows/setup.ps1")
 ```
 
 # Linux Setup
