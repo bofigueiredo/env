@@ -6,4 +6,4 @@ if (-not $active) {
 
 ### Put the installer and setup after the line below
 Write-Host "[blender] SETUP INITIATED" -ForegroundColor Magenta
-winget install -e --id BlenderFoundation.Blender --silent
+winget install --exact --id BlenderFoundation.Blender --silent
