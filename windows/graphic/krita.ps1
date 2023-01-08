@@ -6,4 +6,4 @@ if (-not $active) {
 
 ### Put the installer and setup after the line below
 Write-Host "[krita] SETUP INITIATED" -ForegroundColor Magenta
-winget install --exact --id BlenderFoundation.Blender --silent
+winget install --exact --id KDE.Krita --silent
