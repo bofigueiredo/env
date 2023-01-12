@@ -1,33 +1,25 @@
-$URI_BASE = "https://raw.githubusercontent.com/bofigueiredo/env/main/windows"
-
-$PACKAGE_LIST_URI          = $URI_BASE + "/package.conf"
-$APP_LIST_URI_TEMPLATE     = $URI_BASE + "/<package>/.conf"
-$INSTALLER_URI_TEMPLATE    = $URI_BASE + "/<package>/<app>.ps1"
+$GITHUB_USER       = "bofigueiredo"
+$GITHUB_REPOSITORY = "env"
 
 $ESC = [char]27
-$RESET = "$ESC[0m"
+$FOREGROUND_COLOR_GRAY = "$ESC[30m"
+$FOREGROUND_COLOR_PINK = "$ESC[35m"
+$BACKGROUND_COLOR_BLUE = "$ESC[44m"
+$BACKGROUND_COLOR_PINK = "$ESC[45m"
+$COLOR_RESET = "$ESC[0m"
 
-$GRAY_FG = "$ESC[30m"
-$PINK_FG = "$ESC[35m"
-$BLUE_BG = "$ESC[44m"
-$PINK_BG = "$ESC[45m"
-
-
-$ACTIVE_DATA_TEMPLATE   = "$PINK_FG<value>$RESET" 
-$INACTIVE_DATA_TEMPLATE = "$GRAY_FG<value>$RESET" 
-
-$PKG_TEMPLATE = "$PINK_BG <value> $RESET" 
-$APP_TEMPLATE = "$BLUE_BG <value> $RESET" 
+$BASE_DIR_URI          = "https://github.com/$GITHUB_USER/$GITHUB_REPOSITORY/tree/main/windows/"
+$BASE_RAW_URI_TEMPLATE = "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPOSITORY/main/windows/<PACKAGE>/<APP>"
 
 function Main {
 
 	$installerList = Import-InstallerList
 
 	$installerList | ForEach-Object {[PSCustomObject]$_} | 
-        Format-Table @{Label = 'rowid';   Expression = { Format-DataByStatus $_.active $_.rowid "X" }; align='center'},
-					 @{Label = 'package'; Expression = { Format-DataByStatus $_.active $_.package }},
-					 @{Label = 'app';     Expression = { Format-DataByStatus $_.active $_.app  }; align='center'},
-					 @{Label = 'active';  Expression = { Format-DataByStatus $_.active "Y" "N" }; align='center'} # -GroupBy active
+        Format-Table @{Label = 'rowid';   Expression = { Write-DataByStatus $_.active $_.rowid "X" }; Align='center'; Width = 8},
+					 @{Label = 'package'; Expression = { Write-DataByStatus $_.active $_.package }; Width = 20},
+					 @{Label = 'app';     Expression = { Write-DataByStatus $_.active $_.app  }; Width = 20},
+					 @{Label = 'active';  Expression = { Write-DataByStatus $_.active "Y" "N" }; Align='center'; Width = 8}
 
 	Write-Host "Leave blank to install all"
 	$selected = ($installerList | Where-Object { $_.active })
@@ -42,7 +34,7 @@ function Main {
 	}
 }
 
-function Format-DataByStatus {
+function Write-DataByStatus {
 	param (
 		[Parameter(Mandatory)]
 		[bool] $active,
@@ -50,65 +42,45 @@ function Format-DataByStatus {
 		[Parameter(Mandatory)]
 		[string] $data,
 
-		[string] $dataSwitchInactive
+		[string] $dataSwitchIfInactive
 	)
 
+	$STATUS_ACTIVE_TEMPLATE   = "$FOREGROUND_COLOR_PINK<value>$COLOR_RESET" 
+	$STATUS_INACTIVE_TEMPLATE = "$FOREGROUND_COLOR_GRAY<value>$COLOR_RESET" 
+
 	if ($active) {
-		$dataColored = $ACTIVE_DATA_TEMPLATE.Replace("<value>", $data)	
+		$dataColored = $STATUS_ACTIVE_TEMPLATE.Replace("<value>", $data)	
 	} else {
-		if ($dataSwitchInactive) {
-			$data = $dataSwitchInactive
+		if ($dataSwitchIfInactive) {
+			$data = $dataSwitchIfInactive
 		}
-		$dataColored = $INACTIVE_DATA_TEMPLATE.Replace("<value>", $data)	
+		$dataColored = $STATUS_INACTIVE_TEMPLATE.Replace("<value>", $data)	
 	}
 	return $dataColored
 }
 
-function Get-Lines {
-	param (
-		[Parameter(Mandatory)]
-		[string] $string
-	)
-
-	return ($string -split "\r?\n|\r")
-}
-
-function Get-URIContent {
-	param (
-		[Parameter(Mandatory)]
-		[string] $uri
-	)
-
-	try {
-		return (Invoke-WebRequest -Uri $uri).Content
-	} catch {
-		Write-Host "ERROR: Can't Get-URIContent $uri" -ForegroundColor Red
-	}
-}
-
 function Import-InstallerList {
+	Write-Progress -Activity "Discovering Installers..." -Status "Please Wait!"
 
 	$rowid = 0
 	$installerList = @()
-	$packageList = Get-URIContent $PACKAGE_LIST_URI
+	$packageList = Import-PackageList
+	foreach($package in $packageList) {
 
-	foreach($package in Get-Lines $packageList) {
-		$appListURI = $APP_LIST_URI_TEMPLATE.Replace("<package>", $package)
-		$appList = Get-URIContent $appListURI
-
-		foreach($app in Get-Lines $appList) {
-			$rowid += 1
-			$uri    = $INSTALLER_URI_TEMPLATE.replace("<package>", $package).replace("<app>", $app)
-			$script = Get-URIContent $uri
-			$exist  = $null -ne $script
-			$active = $exist -and (Test-IsInstallerActive $script)
-
-			Write-Host $app $exist $active
+		$appList = Import-AppList $package
+		foreach($app in $appList) {
+			$rowid  += 1
+			$appname = $app.split(".")[0]
+			$uri     = $BASE_RAW_URI_TEMPLATE.replace("<PACKAGE>", $package).replace("<APP>", $app)
+			$ProgressPreference = "SilentlyContinue"
+			$script  = (Invoke-WebRequest -Uri $uri).Content
+			$exist   = $null -ne $script
+			$active  = $exist -and (Test-IsInstallerActive $script)
 
 			$installerList += ([pscustomobject]@{
 				'rowid'   = $rowid;
 				'package' = $package;
-				'app'     = $app;
+				'app'     = $appname;
 				'uri'     = $uri;
 				'exist'   = $exist;
 				'active'  = $active;				
@@ -120,7 +92,25 @@ function Import-InstallerList {
 	return $installerList	
 }
 
+function Import-PackageList {
+	$ProgressPreference = "SilentlyContinue"
+	return (Invoke-WebRequest $BASE_DIR_URI).links | Where-Object {$_.href -like "/*/tree/main/windows/*"} | Select-Object -ExpandProperty title
+}
+
+function Import-AppList {
+	param (
+		[Parameter(Mandatory)]
+		[string] $package
+	)
+	$ProgressPreference = "SilentlyContinue"
+	$packageURI = $BASE_DIR_URI + $package
+	return (Invoke-WebRequest $packageURI).links | Where-Object {$_.href -like "*.ps1"} | Select-Object -ExpandProperty title
+}
+
 function Invoke-Installer($installer) {
+	$PKG_TEMPLATE = "$BACKGROUND_COLOR_PINK <value> $COLOR_RESET" 
+	$APP_TEMPLATE = "$BACKGROUND_COLOR_BLUE <value> $COLOR_RESET" 
+
 	$confirm = Read-Host $PKG_TEMPLATE.Replace("<value>", $installer.package) : $APP_TEMPLATE.Replace("<value>", $installer.app) "Confirm install ? [y]/n"
 	if ($confirm -ne "n") {
 		Write-Host $installer.uri -ForegroundColor Blue
@@ -130,7 +120,7 @@ function Invoke-Installer($installer) {
 }
 
 function Test-IsInstallerActive($content) {
-	$firstLine = (Get-Lines $content)[0]
+	$firstLine = ($content -split "\r?\n|\r")[0]
 	return ($firstLine -like '*true*')
 }
 
