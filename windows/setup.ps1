@@ -1,5 +1,5 @@
-$GITHUB_USER       = "bofigueiredo"
-$GITHUB_REPOSITORY = "env"
+$GITHUB_REPOSITORY = "bofigueiredo/env"
+$GITHUB_BRANCH     = "main"
 
 $ESC = [char]27
 $FOREGROUND_COLOR_GRAY = "$ESC[30m"
@@ -8,8 +8,9 @@ $BACKGROUND_COLOR_BLUE = "$ESC[44m"
 $BACKGROUND_COLOR_PINK = "$ESC[45m"
 $COLOR_RESET = "$ESC[0m"
 
-$BASE_DIR_URI          = "https://github.com/$GITHUB_USER/$GITHUB_REPOSITORY/tree/main/windows/"
-$BASE_RAW_URI_TEMPLATE = "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPOSITORY/main/windows/<PACKAGE>/<APP>"
+$INSTALLERS_ROOT_FOLDER = "$GITHUB_BRANCH/windows/installers"
+$BASE_DIR_URI          = "https://github.com/$GITHUB_REPOSITORY/tree/$INSTALLERS_ROOT_FOLDER/"
+$BASE_RAW_URI_TEMPLATE = "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$INSTALLERS_ROOT_FOLDER/<PACKAGE>/<APP>"
 
 function Main {
 
@@ -94,7 +95,7 @@ function Import-InstallerList {
 
 function Import-PackageList {
 	$ProgressPreference = "SilentlyContinue"
-	return (Invoke-WebRequest $BASE_DIR_URI).links | Where-Object {$_.href -like "/*/tree/main/windows/*"} | Select-Object -ExpandProperty title
+	return (Invoke-WebRequest $BASE_DIR_URI).links | Where-Object {$_.href -like "/*/tree/$INSTALLERS_ROOT_FOLDER/*"} | Select-Object -ExpandProperty title
 }
 
 function Import-AppList {
