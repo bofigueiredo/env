@@ -1,4 +1,4 @@
-$PACKAGE_LIST_URI           = Join-Path $PSScriptRoot "\package.conf"
+$NEW_INSTALLER_LIST         = Join-Path $PSScriptRoot "\new-installer.conf"
 $APP_LIST_URI_TEMPLATE      = Join-Path $PSScriptRoot "\<package>\.conf"
 $INSTALLER_URI_TEMPLATE     = Join-Path $PSScriptRoot "\<package>\<app>.ps1"
 $DEFAULT_INSTALLER_TEMPLATE = Join-Path $PSScriptRoot "\default.installer"
@@ -11,7 +11,7 @@ function Main {
 function Import-InstallerList {
 	$rowid = 0
 	$installerList = @()
-	foreach($package in Get-Content $PACKAGE_LIST_URI) {
+	foreach($package in Get-Content $NEW_INSTALLER_LIST) {
 		$appListUri = $APP_LIST_URI_TEMPLATE.Replace("<package>", $package)
 		foreach($app in Get-Content $appListUri) {
 			$rowid += 1
