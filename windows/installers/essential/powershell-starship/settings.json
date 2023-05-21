@@ -1,0 +1,148 @@
+{
+    "$help": "https://aka.ms/terminal-documentation",
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "actions": 
+    [
+        {
+            "command": "find",
+            "keys": "ctrl+shift+f"
+        },
+        {
+            "command": 
+            {
+                "action": "copy",
+                "singleLine": false
+            },
+            "keys": "ctrl+c"
+        },
+        {
+            "command": "paste",
+            "keys": "ctrl+v"
+        },
+        {
+            "command": 
+            {
+                "action": "splitPane",
+                "split": "auto",
+                "splitMode": "duplicate"
+            },
+            "keys": "alt+shift+d"
+        }
+    ],
+    "copyFormatting": "none",
+    "copyOnSelect": false,
+    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+    "profiles": 
+    {
+        "defaults": 
+        {
+            "colorScheme": "xcad",
+            "elevate": true,
+            "cursorShape": "filledBox",
+            "font": 
+            {
+                "face": "Hack Nerd Font",
+                "size": 14
+            },
+            "historySize": 12000,
+            "intenseTextStyle": "bright",
+            "opacity": 70,
+            "padding": "20"
+        }
+    },
+    "schemes": 
+    [
+        {
+            "background": "#161C2B",
+            "black": "#141D2B",
+            "blue": "#2E6CFF",
+            "brightBlack": "#767676",
+            "brightBlue": "#5CB2FF",
+            "brightCyan": "#5CECC6",
+            "brightGreen": "#C5F467",
+            "brightPurple": "#CF8DFB",
+            "brightRed": "#FF8484",
+            "brightWhite": "#D5DAFF",
+            "brightYellow": "#FFCC5C",
+            "cursorColor": "#C5D1EB",
+            "cyan": "#2DE2B2",
+            "foreground": "#A4B1CD",
+            "green": "#9FEF00",
+            "name": "Cyber Cube",
+            "purple": "#9F00FF",
+            "red": "#FF3E3E",
+            "selectionBackground": "#C5D1EB",
+            "white": "#D5E0FF",
+            "yellow": "#FFAF00"
+        },
+        {
+            "background": "#272932",
+            "black": "#272932",
+            "blue": "#9381FF",
+            "brightBlack": "#7B8097",
+            "brightBlue": "#37EBF3",
+            "brightCyan": "#37EBF3",
+            "brightGreen": "#40FFE9",
+            "brightPurple": "#CB1DCD",
+            "brightRed": "#C71515",
+            "brightWhite": "#C1DEFF",
+            "brightYellow": "#FFF955",
+            "cursorColor": "#FDF500",
+            "cyan": "#00D0DB",
+            "foreground": "#E455AE",
+            "green": "#1AC5B0",
+            "name": "Cyber Punk 2077",
+            "purple": "#742D8B",
+            "red": "#710000",
+            "selectionBackground": "#742D8B",
+            "white": "#D1C5C0",
+            "yellow": "#FDF500"
+        },
+        {
+            "background": "#1F1D27",
+            "black": "#1F1D27",
+            "blue": "#FFC284",
+            "brightBlack": "#353147",
+            "brightBlue": "#FFC284",
+            "brightCyan": "#2488FF",
+            "brightGreen": "#2DCD73",
+            "brightPurple": "#DE8D40",
+            "brightRed": "#D9393E",
+            "brightWhite": "#EAE5FF",
+            "brightYellow": "#D9B76E",
+            "cursorColor": "#FF9839",
+            "cyan": "#2488FF",
+            "foreground": "#B7A1FF",
+            "green": "#2DCD73",
+            "name": "Duotone Dark",
+            "purple": "#DE8D40",
+            "red": "#D9393E",
+            "selectionBackground": "#353147",
+            "white": "#B7A1FF",
+            "yellow": "#D9B76E"
+        },
+        {
+            "background": "#1A1A1A",
+            "black": "#121212",
+            "blue": "#2B4FFF",
+            "brightBlack": "#666666",
+            "brightBlue": "#5C78FF",
+            "brightCyan": "#5AC8FF",
+            "brightGreen": "#905AFF",
+            "brightPurple": "#5EA2FF",
+            "brightRed": "#BA5AFF",
+            "brightWhite": "#FFFFFF",
+            "brightYellow": "#685AFF",
+            "cursorColor": "#FFFFFF",
+            "cyan": "#28B9FF",
+            "foreground": "#F1F1F1",
+            "green": "#7129FF",
+            "name": "xcad",
+            "purple": "#2883FF",
+            "red": "#A52AFF",
+            "selectionBackground": "#FFFFFF",
+            "white": "#F1F1F1",
+            "yellow": "#3D2AFF"
+        }
+    ]
+}
