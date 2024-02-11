@@ -1,33 +1,48 @@
-$NEW_INSTALLER_LIST         = Join-Path $PSScriptRoot "\new-installer.conf"
-$APP_LIST_URI_TEMPLATE      = Join-Path $PSScriptRoot "\<package>\.conf"
-$INSTALLER_URI_TEMPLATE     = Join-Path $PSScriptRoot "\<package>\<app>.ps1"
-$DEFAULT_INSTALLER_TEMPLATE = Join-Path $PSScriptRoot "\default.installer"
+$NEW_INSTALLER_LIST     = Join-Path $PSScriptRoot "\new-installer.conf"
+$DEFAULT_INSTALLER      = Join-Path $PSScriptRoot "\new-installer.default"
+$INSTALLER_URI_TEMPLATE = Join-Path $PSScriptRoot "\installers\<package>\<app>.ps1"
 
 function Main {
 	$installerList = Import-InstallerList
+
+	$installerList | ForEach-Object {[PSCustomObject]$_} | 
+        Format-Table 
+
+	Write-Host "Leave blank to install all"
+	$selected = ($installerList | Where-Object { $_.active })
+
+	$response = Read-Host "Enter [pkg-name] or [rowid]"
+	if ($response -ne "") {
+		$selected = ($selected | Where-Object { ($_.rowid -eq $response) -or ($_.package -eq $response)})
+	} 
+
+	foreach($installer in $selected) {
+		Invoke-Installer $installer
+	}	
 	Resolve-Installers $installerList
 }
 
 function Import-InstallerList {
 	$rowid = 0
 	$installerList = @()
-	foreach($package in Get-Content $NEW_INSTALLER_LIST) {
-		$appListUri = $APP_LIST_URI_TEMPLATE.Replace("<package>", $package)
-		foreach($app in Get-Content $appListUri) {
-			$rowid += 1
-			$uri    = $INSTALLER_URI_TEMPLATE.replace("<package>", $package).replace("<app>", $app)
-			$exist  = Test-ExistURI $uri
-			$active = $exist -and (Test-IsInstallerActive $uri)
+	Write-Host $NEW_INSTALLER_LIST
+	foreach($newInstaller in Get-Content $NEW_INSTALLER_LIST) {
+		$package = $newInstaller.split(":")[0]
+		$app     = $newInstaller.split(":")[1]
 
-			$installerList += ([pscustomobject]@{
-				'rowid'   = $rowid;
-				'package' = $package;
-				'app'     = $app;
-				'uri'     = $uri;
-				'exist'   = $exist;
-				'active'  = $active;
-			  })
-		}
+		$rowid += 1
+		$uri    = $INSTALLER_URI_TEMPLATE.replace("<package>", $package).replace("<app>", $app)
+		$exist  = Test-ExistURI $uri
+		$active = $exist -and (Test-IsInstallerActive $uri)
+
+		$installerList += ([pscustomobject]@{
+			'rowid'   = $rowid;
+			'package' = $package;
+			'app'     = $app;
+			'uri'     = $uri;
+			'exist'   = $exist;
+			'active'  = $active;
+		})
 	}
 
 	return $installerList
@@ -42,7 +57,7 @@ function Initialize-Installer {
 	)
 
 	New-Item $uri | Out-Null
-	Set-Content $uri (Get-Content $DEFAULT_INSTALLER_TEMPLATE).Replace("<app>", $app)
+	Set-Content $uri (Get-Content $DEFAULT_INSTALLER).Replace("<app>", $app)
 	Write-Host "[CREATED] $app" -ForegroundColor Yellow
 }
 
@@ -52,9 +67,11 @@ function Resolve-Installers {
 		[pscustomobject[]] $installerList
 	)
 
+	Write-Host `n`t"[$($installerList.Count)] installer item"
+
 	foreach ($installer in $installerList) {
 		if (-not $installer.exist) {
-			$response = Read-Host "${$installer.app} notfound, create y/[n]"
+			$response = Read-Host "$($installer.app) notfound, create y/[n]"
 			if ($response -eq "y") {
 				Initialize-Installer $installer.uri $installer.app
 			}
@@ -66,7 +83,7 @@ function Resolve-Installers {
 		}
 	}    
 	
-	Write-Host `n`t"[$($installerList.Count)] installer item"
+	
 }
 
 function Test-ExistURI{
